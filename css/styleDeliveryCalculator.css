@@ -1,0 +1,64 @@
+.container {
+    position: relative;
+    margin: 1%
+}
+
+.form-delivery-calculator {
+    width: 30%;
+    margin-top: 50px;
+}
+
+.form-delivery-calculator form {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.form-delivery-calculator input[type="text"], input[type="number"], select {
+    font-size: 14px;
+    border: 1px solid #000;
+    padding: 8px;
+    margin: 10px;
+    display: block;
+    width: 96%;
+    outline: none;
+}
+
+.form-delivery-calculator input[type="text"]::placeholder, input[type="number"]::placeholder {
+    color: #d9d9d9;
+    opacity: 1;
+}
+
+.form-delivery-calculator select {
+    border-radius: 8px;
+}
+
+.form-delivery-calculator input[type="submit"] {
+    font-size: 14px;
+    margin-top: 10px;
+    cursor: pointer;
+    background: #bfbfbf;
+    border: 1px solid #000;
+    border-radius: 5px;
+    outline: none;
+    display: inline-block;
+    text-transform: capitalize;
+    padding: 5px 15px;
+}
+
+.form-delivery-calculator input[type="submit"]:hover {
+    background: #555555;
+    color: #ffffff;
+}
+
+.info-calculate {
+}
+
+.success-calculate p{
+    font-size: 16px;
+}
+
+.error-calculate p {
+    font-size: 16px;
+    color: red;
+}
