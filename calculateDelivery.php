@@ -1,6 +1,6 @@
 <?php
 
-const EXTERNAL_SERVICE = 'http://exercise.develop.maximaster.ru/service/delivery/';
+const EXTERNAL_SERVICE = "http://exercise.develop.maximaster.ru/service/delivery/";
 
 $errors = [];
 $html = "";
@@ -30,15 +30,25 @@ if(array_key_exists('weight', $_POST)) {
 }
 
 if(empty($errors)) {
-    $delivery = file_get_contents(EXTERNAL_SERVICE.'?city='.$city.'&weight='.$weight);
+    $queryArray = array("city"=>$city,"weight"=>$weight);
+    $queryString .= http_build_query($queryArray,'','&');
+    $url = EXTERNAL_SERVICE."?".$queryString;
+
+    /* $delivery = file_get_contents($url); */
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $delivery = curl_exec($ch);
+    curl_close($ch);
 
     if($delivery === false) {
         $errors[] = 'Произошла ошибка при загрузке результата расчета доставки из внешнего сервиса';
         //die('Произошла ошибка при загрузке результата расчета доставки из внешнего сервиса');
     } else {
-        $delivery = json_decode($delivery);
+        $delivery = json_decode($delivery, true);
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        if(json_last_error() === JSON_ERROR_NONE) {
             if($delivery['status'] == "OK") {
                 $html = '<div class="success-calculate"><p>'.$delivery['message'].'</p></div>';
             } else {
@@ -59,4 +69,4 @@ if(!empty($errors)) {
     $html .= '</div>';
 }
 
-return $html;
+echo $html;

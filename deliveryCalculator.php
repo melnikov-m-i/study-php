@@ -61,7 +61,7 @@ function writeJsonListCitiesInFileCache($jsonListCities) {
         <h1>Калькулятор доставки</h1>
         <div class="container">
             <div class="form-delivery-calculator">
-                <form name="formDeliveryCalculator" method="post" action="">
+                <form name="formDeliveryCalculator">
                     <select name="city">
                         <?php foreach ($listCities as $city): ?>
                             <option value="<?=$city;?>" <?=$city == "Москва" ? 'selected' : '';?>><?=$city;?></option>
