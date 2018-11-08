@@ -15,7 +15,7 @@ $app->get('/[{name}]', function (Request $request, Response $response, array $ar
 
 $app->group('/api', function() {
 
-    $this->get('/products', function(Request $request, Response $response) {
+    $this->get('/products/', function(Request $request, Response $response) {
         $sql = "SELECT * FROM `products`";
         try {
             $db = $this->db;
@@ -28,7 +28,7 @@ $app->group('/api', function() {
         }
     });
 
-    $this->get('/products/{id:[0-9]+}', function(Request $request, Response $response) {
+    $this->get('/products/{id:[0-9]+}/', function(Request $request, Response $response) {
         $id = $request->getAttribute('id');
         $sql = "SELECT * FROM `products` WHERE `id`=:id";
         try {
@@ -49,7 +49,7 @@ $app->group('/api', function() {
         }
     });
 
-    $this->post('/products', function(Request $request, Response $response) {
+    $this->post('/products/', function(Request $request, Response $response) {
         $product = json_decode($request->getBody());
 
         $sql = "INSERT INTO `products` (`name`, `description`, `price`) VALUES (:name, :description, :price)";
@@ -73,7 +73,7 @@ $app->group('/api', function() {
         }
     });
 
-    $this->put('/products/{id:[0-9]+}', function(Request $request, Response $response) {
+    $this->put('/products/{id:[0-9]+}/', function(Request $request, Response $response) {
         $product = json_decode($request->getBody());
         $id = $request->getAttribute('id');
         $sql = "UPDATE `products` SET ";
@@ -118,7 +118,7 @@ $app->group('/api', function() {
         }
     });
 
-    $this->delete('/products/{id:[0-9]+}', function(Request $request, Response $response) {
+    $this->delete('/products/{id:[0-9]+}/', function(Request $request, Response $response) {
         $id = $request->getAttribute('id');
         $sql = "DELETE FROM `products` WHERE id=:id";
         try {
@@ -137,4 +137,10 @@ $app->group('/api', function() {
             return $response->withJson(['success' => false, 'error' => ['message' => $e->getMessage()]], 400);
         }
     });
+})->add(function ($req, $res, $next) {
+    $response = $next($req, $res);
+    return $response
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 });
