@@ -1,31 +1,34 @@
-window.onload = function () {
+document.addEventListener("DOMContentLoaded", ready);
 
-    var formDeliveryCalculator = document.getElementsByName("formDeliveryCalculator")[0];
+function ready() {
+    var formDeliveryCalculator = document.querySelector('form[name="formDeliveryCalculator"]');
 
-    formDeliveryCalculator.onsubmit = function(event) {
-        event.preventDefault();
+    if(formDeliveryCalculator) {
+        formDeliveryCalculator.addEventListener('submit', function(event) {
+            event.preventDefault();
 
-        let data = new FormData(formDeliveryCalculator);
+            fetch('./calculateDelivery.php', {
+                body: new FormData(this),
+                method: "POST"
+            }).then(function(response) {
+                    var contentType = response.headers.get("content-type");
 
-        fetch('./calculateDelivery.php', {
-            body: data,
-            method: "POST"
-        }).then(function(response) {
-                var contentType = response.headers.get("content-type");
-                if(contentType && contentType.includes("text/html")) {
-                    return response.text();
-                }
-                throw new TypeError("Данные получены не формате HTML");
-            })
-            .then(function(html) {
-                let infoCalculate = document.querySelector('.info-calculate');
-                infoCalculate.innerHTML = html;
-            })
-            .catch(function(error) {
-                let infoCalculate = document.querySelector('.info-calculate');
-                infoCalculate.innerHTML = '<div class="error-calculate"><p>'+error.message+'</p></div>';
-            });
+                    if(contentType && contentType.includes("application/json")) {
+                        return response.json();
+                    }
 
+                    throw new TypeError("Данные получены не формате HTML");
+                })
+                .then(function(data) {
+                    let divMessage = document.createElement('div');
+                    divMessage.className = data['status'] == "OK" ? "success-calculate" : "";
+                    divMessage.insertAdjacentHTML('afterBegin', '<p>' + data['message'] + '</p>');
+                    document.querySelector('.info-calculate').innerHTML = divMessage.outerHTML;
+                })
+                .catch(function(error) {
+                    document.querySelector('.info-calculate').innerHTML = '<div class="error-calculate">' +
+                        '<p>' + error + '</p></div>';
+                });
+        });
     }
-
-};
+}

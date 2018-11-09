@@ -23,7 +23,7 @@ $app->group('/api', function() {
             $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $db = null;
             return $response->withJson(['success' => true, 'data' => $products], 200);
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             return $response->withJson(['success' => false, 'error' => ['message' => $e->getMessage()]], 400);
         }
     });
@@ -36,65 +36,66 @@ $app->group('/api', function() {
             $stmt = $db->prepare($sql);
             $stmt->bindParam("id", $id);
             $stmt->execute();
-            $product = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $product = $stmt->fetch(PDO::FETCH_ASSOC);
             $db = null;
 
-            if(count($product) == 0) {
+            if ($product === false) {
                 return $response->withJson(['success' => false, 'error' => ['message' => 'Нет товара с таким id']], 404);
             } else {
-                return $response->withJson(['success' => true, 'data' => $product[0]], 200);
+                return $response->withJson(['success' => true, 'data' => $product], 200);
             }
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             return $response->withJson(['success' => false, 'error' => ['message' => $e->getMessage()]], 400);
         }
     });
 
     $this->post('/products/', function(Request $request, Response $response) {
-        $product = json_decode($request->getBody());
+        $product = json_decode($request->getBody(), true);
+
+        $safeFields = ['name', 'description', 'price'];
 
         $sql = "INSERT INTO `products` (`name`, `description`, `price`) VALUES (:name, :description, :price)";
         try {
             $db = $this->db;
             $stmt = $db->prepare($sql);
-            $stmt->bindParam("name", $product->name);
-            $stmt->bindParam("description", $product->description);
-            $stmt->bindParam("price", $product->price);
-            $stmt->execute();
-            $product->id = $db->lastInsertId();
 
-            if($stmt->rowCount() == 0) {
+            foreach ($safeFields as $field) {
+                if(array_key_exists($field, $product)) {
+                    $stmt->bindParam(':'.$field, $product[$field]);
+                }
+            }
+
+            $stmt->execute();
+            $product['id'] = $db->lastInsertId();
+
+            if ($stmt->rowCount() == 0) {
                 return $response->withJson(['success' => false, 'error' => ['message' => "Не удалось добавить товар"]], 400);
             }
 
             $db = null;
             return $response->withJson(['success' => true, 'data' => $product], 201);
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             return $response->withJson(['success' => false, 'error' => ['message' => $e->getMessage()]], 400);
         }
     });
 
     $this->put('/products/{id:[0-9]+}/', function(Request $request, Response $response) {
-        $product = json_decode($request->getBody());
+        $product = json_decode($request->getBody(), true);
         $id = $request->getAttribute('id');
+        $safeFields = ['name', 'description', 'price'];
         $sql = "UPDATE `products` SET ";
         $param = [];
         try {
-            if(isset($product->name)) {
-                $sql .= " `name`=:name, ";
-                $param[':name'] = $product->name;
+            foreach ($safeFields as $field) {
+                if(array_key_exists($field, $product)) {
+                    $sql .= " `$field`=:$field,";
+                    $param[':'.$field] = $product[$field];
+                }
             }
 
-            if(isset($product->description)) {
-                $sql .= " `description`=:description, ";
-                $param[':description'] = $product->description;
-            }
+            $sql = rtrim($sql, ',');
 
-            if(isset($product->price)) {
-                $sql .= " `price`=:price ";
-                $param[':price'] = $product->price;
-            }
-
-            if(count($param) == 0) {
+            if (count($param) == 0) {
                 return $response->withJson(['success' => false, 'error' => ['message' => "Не переданы данные для обновления"]], 400);
             }
 
@@ -105,15 +106,15 @@ $app->group('/api', function() {
             $stmt = $db->prepare($sql);
             $stmt->execute($param);
 
-            if($stmt->rowCount() == 0) {
+            if ($stmt->rowCount() == 0) {
                 return $response->withJson(['success' => false, 'error' => ['message' => "Нет товара с таким id"]], 404);
             }
 
             $db = null;
-            $product->id = $id;
+            $product['id'] = $id;
 
             return $response->withJson(['success' => true, 'data' => $product], 200);
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             return $response->withJson(['success' => false, 'error' => ['message' => $e->getMessage()]], 400);
         }
     });
@@ -127,13 +128,13 @@ $app->group('/api', function() {
             $stmt->bindParam("id", $id);
             $stmt->execute();
 
-            if($stmt->rowCount() == 0) {
+            if ($stmt->rowCount() == 0) {
                 return $response->withJson(['success' => false, 'error' => ['message' => "Нет товара с таким id"]], 404);
             }
 
             $db = null;
             return $response->withJson(['success' => true, 'message' => 'Успешное удаление товара с переданным id'], 204);
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             return $response->withJson(['success' => false, 'error' => ['message' => $e->getMessage()]], 400);
         }
     });

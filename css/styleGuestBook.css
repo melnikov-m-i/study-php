@@ -81,10 +81,6 @@
     color: #ffffff;
 }
 
-.success-send-message p{
-    font-size: 16px;
-}
-
 .error-send-message p {
     font-size: 16px;
     color: red;
