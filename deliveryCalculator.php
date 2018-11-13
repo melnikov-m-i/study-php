@@ -1,54 +1,9 @@
 <?php
+require_once('./DataCache.php');
+
 header ("Content-Type: text/html; charset=utf-8");
 
-const FILE_CACHE = './cache/cacheCity.txt';
-const EXTERNAL_SERVICE = 'http://exercise.develop.maximaster.ru/service/city/';
-
-if (file_exists(FILE_CACHE)) {
-    $dateLastModifyFileCache = filemtime(FILE_CACHE);
-    if ($dateLastModifyFileCache && $dateLastModifyFileCache < mktime(0,0,0)) {
-        $listCities = downloadListOfCitiesFromAnExternalService(EXTERNAL_SERVICE);
-    } else {
-        $listCities = file_get_contents(FILE_CACHE);
-        if ($listCities === false) {
-            die('Произошла ошибка при загрузке списка городов из файла кэша');
-        }
-    }
-} else {
-    $listCities = downloadListOfCitiesFromAnExternalService(EXTERNAL_SERVICE);
-}
-
-$listCities = json_decode($listCities);
-
-if (json_last_error() !== JSON_ERROR_NONE) {
-    die('Список городов передан в формате отличном от JSON');
-}
-
-function downloadListOfCitiesFromAnExternalService($service) {
-    $listCities = file_get_contents($service);
-    if ($listCities === false) {
-        die('Произошла ошибка при загрузке списка городов из внешнего сервиса');
-    } else {
-        $result = json_decode($listCities);
-
-        if (json_last_error() === JSON_ERROR_NONE) {
-            writeJsonListCitiesInFileCache($listCities);
-            return $listCities;
-        } else {
-            die('Список городов передан в формате отличном от JSON');
-        }
-    }
-}
-
-function writeJsonListCitiesInFileCache($jsonListCities) {
-    $countByte = file_put_contents(FILE_CACHE, $jsonListCities);
-
-    if ($countByte === false) {
-        die('При записи в файл списка городов произошла ошибка');
-    }
-
-    return $countByte;
-}
+$listCities = DataCache::getInstance()->getData();
 
 ?>
 <!DOCTYPE html>

@@ -1,8 +1,9 @@
 <?php
+    require_once('./DataCache.php');
+
     header ("Content-Type: application/json");
 
-    const FILE_CACHE = './cache/cacheCity.txt';
-    const EXTERNAL_SERVICE = "http://exercise.develop.maximaster.ru/service/delivery/";
+    const EXTERNAL_SERVICE_DELIVERY = "http://exercise.develop.maximaster.ru/service/delivery/";
 
     $city = "";
     $weight = "";
@@ -15,17 +16,7 @@
         if (mb_strlen($city) == 0) {
             sendJsonErrorMessage("Выберите город для доставки(он не может быть пустым)");
         } else {
-            $listCities = file_get_contents(FILE_CACHE);
-
-            if ($listCities === false) {
-                sendJsonErrorMessage("Произошла ошибка при загрузке списка городов из файла кэша");
-            }
-
-            $listCities = json_decode($listCities);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                sendJsonErrorMessage("Произошла ошибка при проверке формата списка городов");
-            }
+            $listCities = DataCache::getInstance()->getData();
 
             if (!in_array($city, $listCities)) {
                 sendJsonErrorMessage("Данного города нет в списке поддерживаемых, выберите другой");
@@ -49,7 +40,7 @@
 
     $queryArray = array("city" => $city, "weight" => $weight);
     $queryString .= http_build_query($queryArray,'','&');
-    $url = EXTERNAL_SERVICE."?".$queryString;
+    $url = EXTERNAL_SERVICE_DELIVERY."?".$queryString;
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);

@@ -52,7 +52,7 @@ $app->group('/api', function() {
     $this->post('/products/', function(Request $request, Response $response) {
         $product = json_decode($request->getBody(), true);
 
-        $safeFields = ['name', 'description', 'price'];
+        $safeFields = Products::selfFields();
 
         $sql = "INSERT INTO `products` (`name`, `description`, `price`) VALUES (:name, :description, :price)";
         try {
@@ -82,7 +82,7 @@ $app->group('/api', function() {
     $this->put('/products/{id:[0-9]+}/', function(Request $request, Response $response) {
         $product = json_decode($request->getBody(), true);
         $id = $request->getAttribute('id');
-        $safeFields = ['name', 'description', 'price'];
+        $safeFields = Products::selfFields();
         $sql = "UPDATE `products` SET ";
         $param = [];
         try {
